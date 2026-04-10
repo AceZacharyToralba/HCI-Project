@@ -74,6 +74,45 @@ class _OptionScreenState extends State<OptionScreen> {
                 ),
                 SizedBox(height: size.height * 0.04),
                 GestureDetector(
+                  onTap: () async {
+                    audioManager.playButtonClick();
+                    await audioManager.setMuted(!audioManager.isMuted);
+                    if (!mounted) return;
+                    setState(() {});
+                  },
+                  child: SizedBox(
+                    width: size.width * 0.52,
+                    height: size.height * 0.085,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned.fill(
+                          child: Image.asset(
+                            'assets/main_menu_buttons.png',
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.none,
+                          ),
+                        ),
+                        Text(
+                          audioManager.isMuted ? 'UNMUTE' : 'MUTE',
+                          style: TextStyle(
+                            fontSize: size.width * 0.04,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.white,
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.02),
+                GestureDetector(
                   onTap: () {
                     audioManager.playButtonClick();
                     Navigator.pop(context);

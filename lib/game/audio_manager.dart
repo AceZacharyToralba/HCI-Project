@@ -18,6 +18,7 @@ class AudioManager {
 
   double bgmVolume = 1.0;
   double sfxVolume = 1.0;
+  bool isMuted = false;
 
   bool _isInitialized = false;
   Future<void>? _initFuture;
@@ -33,13 +34,12 @@ class AudioManager {
   final AudioPlayer _bgmPlayer = AudioPlayer(playerId: 'bgm_player');
   final AudioPlayer _characterSelectionPlayer =
       AudioPlayer(playerId: 'character_selection_player');
-  final AudioPlayer _menuTapPlayer = AudioPlayer(playerId: 'menu_tap_player');
-  final AudioPlayer _gameplayClickPlayer =
-      AudioPlayer(playerId: 'gameplay_click_player');
   final AudioContext _mixingAudioContext = AudioContextConfig(
     focus: AudioContextConfigFocus.mixWithOthers,
   ).build();
 
+  AudioPool? _menuTapPool;
+  AudioPool? _gameplayClickPool;
   AudioPool? _trainingSuccessPool;
   AudioPool? _trainingFailedPool;
   AudioPool? _statsGainedPool;
@@ -63,14 +63,8 @@ class AudioManager {
     try {
       await _bgmPlayer.setAudioContext(_mixingAudioContext);
       await _characterSelectionPlayer.setAudioContext(_mixingAudioContext);
-      await _menuTapPlayer.setAudioContext(_mixingAudioContext);
-      await _gameplayClickPlayer.setAudioContext(_mixingAudioContext);
       await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
       await _characterSelectionPlayer.setReleaseMode(ReleaseMode.stop);
-      await _menuTapPlayer.setReleaseMode(ReleaseMode.stop);
-      await _gameplayClickPlayer.setReleaseMode(ReleaseMode.stop);
-      await _menuTapPlayer.setPlayerMode(PlayerMode.lowLatency);
-      await _gameplayClickPlayer.setPlayerMode(PlayerMode.lowLatency);
 
       await _audioCache.loadAll(<String>[
         _mainMenuBgmPath,
@@ -90,6 +84,14 @@ class AudioManager {
         'audio/sfx/turn_transition.mp3',
       ]);
 
+      _menuTapPool = await _createPool(
+        'audio/sfx/tap_Sound.wav',
+        maxPlayers: 1,
+      );
+      _gameplayClickPool = await _createPool(
+        'audio/sfx/button_click.mp3',
+        maxPlayers: 1,
+      );
       _trainingSuccessPool =
           await _createPool('audio/sfx/training_success.mp3');
       _trainingFailedPool =
@@ -106,12 +108,15 @@ class AudioManager {
     }
   }
 
-  Future<AudioPool> _createPool(String path) {
+  Future<AudioPool> _createPool(
+    String path, {
+    int maxPlayers = 3,
+  }) {
     return AudioPool.create(
       source: AssetSource(path),
       audioCache: _audioCache,
       audioContext: _mixingAudioContext,
-      maxPlayers: 3,
+      maxPlayers: maxPlayers,
       minPlayers: 1,
       playerMode: PlayerMode.lowLatency,
     );
@@ -121,7 +126,7 @@ class AudioManager {
     await init();
 
     if (_currentBgmPath == path) {
-      await _bgmPlayer.setVolume(bgmVolume);
+      await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
       if (_bgmPlayer.state != PlayerState.playing) {
         await _bgmPlayer.resume();
       }
@@ -131,7 +136,7 @@ class AudioManager {
     await _bgmPlayer.stop();
     await _bgmPlayer.play(
       AssetSource(path),
-      volume: bgmVolume,
+      volume: isMuted ? 0.0 : bgmVolume,
     );
     _currentBgmPath = path;
   }
@@ -160,6 +165,7 @@ class AudioManager {
   }
 
   void playButtonClick() {
+    if (isMuted) return;
     final now = DateTime.now();
 
     if (_lastButtonClickTime != null &&
@@ -168,13 +174,11 @@ class AudioManager {
     }
 
     _lastButtonClickTime = now;
-    unawaited(_playInstantButtonSfx(
-      player: _menuTapPlayer,
-      path: 'audio/sfx/tap_Sound.wav',
-    ));
+    _startPool(_menuTapPool, 'audio/sfx/tap_Sound.wav');
   }
 
   void playGameplayButtonClick() {
+    if (isMuted) return;
     final now = DateTime.now();
 
     if (_lastGameplayButtonClickTime != null &&
@@ -184,14 +188,12 @@ class AudioManager {
     }
 
     _lastGameplayButtonClickTime = now;
-    unawaited(_playInstantButtonSfx(
-      player: _gameplayClickPlayer,
-      path: 'audio/sfx/button_click.mp3',
-    ));
+    _startPool(_gameplayClickPool, 'audio/sfx/button_click.mp3');
   }
 
   Future<void> playCharacterSelectionStart() async {
     await init();
+    if (isMuted) return;
 
     try {
       await _characterSelectionPlayer.stop();
@@ -210,40 +212,52 @@ class AudioManager {
   }
 
   void playTrainingSuccess() {
+    if (isMuted) return;
     _startPool(_trainingSuccessPool, 'audio/sfx/training_success.mp3');
   }
 
   void playTrainingFailed() {
+    if (isMuted) return;
     _startPool(_trainingFailedPool, 'audio/sfx/training_failed.mp3');
   }
 
   void playStatsGained() {
+    if (isMuted) return;
     _startPool(_statsGainedPool, 'audio/sfx/stats_gained.mp3');
   }
 
   void playCoinsGained() {
+    if (isMuted) return;
     _startPool(_coinsGainedPool, 'audio/sfx/coins_gained.mp3');
   }
 
   void playEventPopup() {
+    if (isMuted) return;
     _startPool(_eventPopupPool, 'audio/sfx/event_pop_up.mp3');
   }
 
   void playStoreOpen() {
+    if (isMuted) return;
     _startPool(_storeOpenPool, 'audio/sfx/opening_store.mp3');
   }
 
   void playTurnTransition() {
+    if (isMuted) return;
     _startPool(_turnTransitionPool, 'audio/sfx/turn_transition.mp3');
   }
 
   Future<void> setBgmVolume(double value) async {
     bgmVolume = value;
-    await _bgmPlayer.setVolume(bgmVolume);
+    await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
   }
 
   void setSfxVolume(double value) {
     sfxVolume = value;
+  }
+
+  Future<void> setMuted(bool value) async {
+    isMuted = value;
+    await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
   }
 
   void _startPool(AudioPool? pool, String fallbackPath) {
@@ -270,18 +284,4 @@ class AudioManager {
     }
   }
 
-  Future<void> _playInstantButtonSfx({
-    required AudioPlayer player,
-    required String path,
-  }) async {
-    try {
-      await player.stop();
-      await player.play(
-        AssetSource(path),
-        volume: sfxVolume,
-      );
-    } catch (_) {
-      await _playFallbackSfx(path);
-    }
-  }
 }
