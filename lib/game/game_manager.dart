@@ -90,16 +90,16 @@ class GameManager {
 
   // ==================================================
   // FINAL SCORE
-  // rebalance this later.
+  // Rebalanced around the higher late-game stat totals.
   // ==================================================
   int get finalScore {
     return intellect +
         fitness +
         charisma +
         creativity +
-        coins +
-        (currentWave * 100) +
-        (turnsLeft * 10);
+        (coins * 2) +
+        (currentWave * 250) +
+        (turnsLeft * 15);
   }
 
   // ==================================================
@@ -147,18 +147,19 @@ class GameManager {
 
   // ==================================================
   // PERFORMANCE RATING
-  // Based on the final score.
-  // rebalance this later too.
+  // Based on the rebalanced late-game score range.
   // ==================================================
   String get performanceRating {
-    if (finalScore >= 500) {
+    if (finalScore >= 2500) {
       return 'S';
-    } else if (finalScore >= 400) {
+    } else if (finalScore >= 2100) {
       return 'A';
-    } else if (finalScore >= 300) {
+    } else if (finalScore >= 1700) {
       return 'B';
-    } else {
+    } else if (finalScore >= 1300) {
       return 'C';
+    } else {
+      return 'D';
     }
   }
 
@@ -567,8 +568,8 @@ int get displayedFailureRate {
   }
 
   int _getTrainingBaseGain(String statName, {required bool isBuffed}) {
-    // Facility level scales every wave, so later semesters train much harder.
-    final facilityBonus = (facilityLevel - 1) * 12;
+    // Wave 2+ needs a much sharper gain jump so the later goals stay reachable.
+    final facilityBonus = _getFacilityBonus();
 
     switch (statName) {
       case 'intellect':
@@ -581,6 +582,19 @@ int get displayedFailureRate {
         return (isBuffed ? 23 : 15) + facilityBonus;
       default:
         return facilityBonus;
+    }
+  }
+
+  int _getFacilityBonus() {
+    switch (facilityLevel) {
+      case 1:
+        return 0;
+      case 2:
+        return 24;
+      case 3:
+        return 50;
+      default:
+        return 0;
     }
   }
 
