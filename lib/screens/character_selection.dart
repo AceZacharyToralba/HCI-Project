@@ -15,6 +15,7 @@ class CharacterSelection extends StatefulWidget {
 }
 
 class _CharacterSelectionState extends State<CharacterSelection> {
+  static const String _mainMenuAssetBase = 'assets/main_menu assets';
   int currentIndex = 0;
   bool isStartingGame = false;
   final AudioManager audioManager = AudioManager.instance;
@@ -91,8 +92,9 @@ class _CharacterSelectionState extends State<CharacterSelection> {
 
     final imagesToPrecache = <String>[
       ...portraitPaths,
-      'assets/left_arrow.png',
-      'assets/right_arrow.png',
+      '$_mainMenuAssetBase/left_arrow.png',
+      '$_mainMenuAssetBase/right_arrow.png',
+      '$_mainMenuAssetBase/home_icon sprite.png',
     ];
 
     for (final imagePath in imagesToPrecache) {
@@ -267,11 +269,8 @@ class _CharacterSelectionState extends State<CharacterSelection> {
                         ),
                       ),
                       SizedBox(width: size.width * 0.03),
-                      _texturedButton(
-                        width: size.width * 0.19,
-                        height: size.height * 0.075,
-                        texturePath: 'assets/gameplay screeen/Auto Event OK Button.png',
-                        label: 'HOME',
+                      _iconButton(
+                        size: size,
                         onTap: _goHome,
                       ),
                     ],
@@ -480,7 +479,30 @@ class _CharacterSelectionState extends State<CharacterSelection> {
         width: size.width * 0.12,
         height: size.width * 0.12,
         child: Image.asset(
-          isLeft ? 'assets/left_arrow.png' : 'assets/right_arrow.png',
+          isLeft
+              ? '$_mainMenuAssetBase/left_arrow.png'
+              : '$_mainMenuAssetBase/right_arrow.png',
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _iconButton({
+    required Size size,
+    required Future<void> Function() onTap,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        audioManager.playButtonClick();
+        await onTap();
+      },
+      child: SizedBox(
+        width: size.width * 0.13,
+        height: size.width * 0.13,
+        child: Image.asset(
+          '$_mainMenuAssetBase/home_icon sprite.png',
           fit: BoxFit.contain,
           filterQuality: FilterQuality.none,
         ),

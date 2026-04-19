@@ -10,6 +10,7 @@ class OptionScreen extends StatefulWidget {
 }
 
 class _OptionScreenState extends State<OptionScreen> {
+  static const String _mainMenuAssetBase = 'assets/main_menu assets';
   final AudioManager audioManager = AudioManager.instance;
 
   @override
@@ -73,43 +74,30 @@ class _OptionScreenState extends State<OptionScreen> {
                   },
                 ),
                 SizedBox(height: size.height * 0.04),
-                GestureDetector(
-                  onTap: () async {
-                    audioManager.playButtonClick();
-                    await audioManager.setMuted(!audioManager.isMuted);
-                    if (!mounted) return;
-                    setState(() {});
-                  },
-                  child: SizedBox(
-                    width: size.width * 0.52,
-                    height: size.height * 0.085,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Positioned.fill(
-                          child: Image.asset(
-                            'assets/main_menu_buttons.png',
-                            fit: BoxFit.fill,
-                            filterQuality: FilterQuality.none,
-                          ),
-                        ),
-                        Text(
-                          audioManager.isMuted ? 'UNMUTE' : 'MUTE',
-                          style: TextStyle(
-                            fontSize: size.width * 0.04,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.white,
-                                blurRadius: 6,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _smallToggleButton(
+                      size: size,
+                      label: audioManager.isBgmMuted ? 'BGM OFF' : 'BGM ON',
+                      onTap: () async {
+                        audioManager.playButtonClick();
+                        await audioManager.setBgmMuted(!audioManager.isBgmMuted);
+                        if (!mounted) return;
+                        setState(() {});
+                      },
                     ),
-                  ),
+                    SizedBox(width: size.width * 0.03),
+                    _smallToggleButton(
+                      size: size,
+                      label: audioManager.isSfxMuted ? 'SFX OFF' : 'SFX ON',
+                      onTap: () {
+                        audioManager.playButtonClick();
+                        audioManager.setSfxMuted(!audioManager.isSfxMuted);
+                        setState(() {});
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: size.height * 0.02),
                 GestureDetector(
@@ -125,7 +113,7 @@ class _OptionScreenState extends State<OptionScreen> {
                       children: [
                         Positioned.fill(
                           child: Image.asset(
-                            'assets/main_menu_buttons.png',
+                            '$_mainMenuAssetBase/main_menu_buttons.png',
                             fit: BoxFit.fill,
                             filterQuality: FilterQuality.none,
                           ),
@@ -151,6 +139,46 @@ class _OptionScreenState extends State<OptionScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _smallToggleButton({
+    required Size size,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: size.width * 0.32,
+        height: size.height * 0.075,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                '$_mainMenuAssetBase/main_menu_buttons.png',
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: size.width * 0.032,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                shadows: const [
+                  Shadow(
+                    color: Colors.white,
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

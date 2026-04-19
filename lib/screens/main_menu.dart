@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../game/audio_manager.dart';
 import 'character_selection.dart';
 import 'leaderboard_screen.dart';
@@ -15,6 +16,7 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
+  static const String _mainMenuAssetBase = 'assets/main_menu assets';
   // ==========================================================
   // UI STATE
   // ==========================================================
@@ -63,7 +65,7 @@ class _MainMenuState extends State<MainMenu> {
                   SizedBox(height: size.height * 0.12),
 
                   Text(
-                    "Stat Scholar",
+                    "StatScholar",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: size.width * 0.08,
@@ -104,8 +106,9 @@ class _MainMenuState extends State<MainMenu> {
 
                   _menuButton(size, menuLabels[4], () {
                     audioManager.playButtonClick();
-
-                    Navigator.pop(context);
+                    // Use the platform close action so Quit actually exits
+                    // from the main menu instead of only popping a route.
+                    SystemNavigator.pop();
                   }),
 
                   const Spacer(),
@@ -135,7 +138,7 @@ class _MainMenuState extends State<MainMenu> {
             children: [
               Positioned.fill(
                 child: Image.asset(
-                  'assets/main_menu_buttons.png',
+                  '$_mainMenuAssetBase/main_menu_buttons.png',
                   fit: BoxFit.fill,
                 ),
               ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../game/audio_manager.dart';
+import 'main_menu.dart';
 
 class TutorialScreen extends StatefulWidget {
   const TutorialScreen({super.key});
@@ -12,6 +13,7 @@ class TutorialScreen extends StatefulWidget {
 }
 
 class _TutorialScreenState extends State<TutorialScreen> {
+  static const String _mainMenuAssetBase = 'assets/main_menu assets';
   final PageController pageController = PageController();
   final AudioManager audioManager = AudioManager.instance;
 
@@ -86,7 +88,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
   void _goBack() {
     audioManager.playButtonClick();
-    Navigator.pop(context);
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainMenu(),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -187,30 +195,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
                       GestureDetector(
                         onTap: _goBack,
                         child: SizedBox(
-                          width: size.width * 0.18,
-                          height: size.height * 0.075,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned.fill(
-                                child: Image.asset(
-                                  'assets/gameplay screeen/Auto Event OK Button.png',
-                                  fit: BoxFit.fill,
-                                  filterQuality: FilterQuality.none,
-                                ),
-                              ),
-                              Text(
-                                'EXIT',
-                                style: TextStyle(
-                                  fontSize: size.width * 0.035,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  shadows: const [
-                                    Shadow(color: Colors.white, blurRadius: 6),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          width: size.width * 0.13,
+                          height: size.width * 0.13,
+                          child: Image.asset(
+                            '$_mainMenuAssetBase/home_icon sprite.png',
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.none,
                           ),
                         ),
                       ),

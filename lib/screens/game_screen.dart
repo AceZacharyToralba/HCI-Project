@@ -477,6 +477,23 @@ class _GameScreenState extends State<GameScreen> {
     return '$value / ${GameManager.statCap}';
   }
 
+  Widget _goalProgressRow({
+    required Size size,
+    required String label,
+    required int currentValue,
+    required int goalValue,
+    required bool isMet,
+  }) {
+    return Text(
+      '$label: $currentValue / $goalValue',
+      style: TextStyle(
+        fontSize: size.width * 0.038,
+        color: isMet ? Colors.green.shade800 : Colors.black,
+        fontWeight: isMet ? FontWeight.bold : FontWeight.w500,
+      ),
+    );
+  }
+
   String _getDisplayedPreviewTextForStat(String statName) {
     if (gameManager.selectedAction == statName && gameManager.isTrainingPreview) {
       final previewGain = gameManager.getTrainingGain(
@@ -671,11 +688,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Color _failureRateColor(int energyValue) {
-    if (energyValue >= 70) {
+  Color _failureRateColor(int failureRateValue) {
+    if (failureRateValue <= 15) {
       return Colors.green.shade700;
     }
-    if (energyValue >= 30) {
+    if (failureRateValue <= 55) {
       return Colors.orange.shade800;
     }
     return Colors.red.shade700;
@@ -1057,7 +1074,9 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                         _outlinedText(
                           text: '${gameManager.displayedFailureRate}%',
-                          fillColor: _failureRateColor(displayEnergy),
+                          fillColor: _failureRateColor(
+                            gameManager.displayedFailureRate,
+                          ),
                           strokeWidth: 2.2,
                           style: TextStyle(
                             fontSize: size.width * 0.042,
@@ -1539,34 +1558,58 @@ class _GameScreenState extends State<GameScreen> {
                               ),
                               SizedBox(height: size.height * 0.02),
                               Text(
-                                'Intellect: ${gameManager.intellectGoal}',
+                                'Reach all four goals before turns run out to advance.',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: size.width * 0.038,
-                                  color: Colors.black,
+                                  fontSize: size.width * 0.032,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
                                 ),
                               ),
-                              SizedBox(height: size.height * 0.01),
-                              Text(
-                                'Fitness: ${gameManager.fitnessGoal}',
-                                style: TextStyle(
-                                  fontSize: size.width * 0.038,
-                                  color: Colors.black,
-                                ),
+                              SizedBox(height: size.height * 0.02),
+                              _goalProgressRow(
+                                size: size,
+                                label: 'Intellect',
+                                currentValue: gameManager.intellect,
+                                goalValue: gameManager.intellectGoal,
+                                isMet: gameManager.hasMetGoalForStat('intellect'),
                               ),
                               SizedBox(height: size.height * 0.01),
-                              Text(
-                                'Charisma: ${gameManager.charismaGoal}',
-                                style: TextStyle(
-                                  fontSize: size.width * 0.038,
-                                  color: Colors.black,
-                                ),
+                              _goalProgressRow(
+                                size: size,
+                                label: 'Fitness',
+                                currentValue: gameManager.fitness,
+                                goalValue: gameManager.fitnessGoal,
+                                isMet: gameManager.hasMetGoalForStat('fitness'),
                               ),
                               SizedBox(height: size.height * 0.01),
+                              _goalProgressRow(
+                                size: size,
+                                label: 'Charisma',
+                                currentValue: gameManager.charisma,
+                                goalValue: gameManager.charismaGoal,
+                                isMet: gameManager.hasMetGoalForStat('charisma'),
+                              ),
+                              SizedBox(height: size.height * 0.01),
+                              _goalProgressRow(
+                                size: size,
+                                label: 'Creativity',
+                                currentValue: gameManager.creativity,
+                                goalValue: gameManager.creativityGoal,
+                                isMet: gameManager.hasMetGoalForStat('creativity'),
+                              ),
+                              SizedBox(height: size.height * 0.02),
                               Text(
-                                'Creativity: ${gameManager.creativityGoal}',
+                                gameManager.hasMetCurrentGoals
+                                    ? 'Ready to proceed to the next semester.'
+                                    : 'Any stat still below its goal will cause a failed run at semester end.',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: size.width * 0.038,
-                                  color: Colors.black,
+                                  fontSize: size.width * 0.03,
+                                  fontWeight: FontWeight.w600,
+                                  color: gameManager.hasMetCurrentGoals
+                                      ? Colors.green.shade800
+                                      : Colors.red.shade700,
                                 ),
                               ),
                               SizedBox(height: size.height * 0.03),

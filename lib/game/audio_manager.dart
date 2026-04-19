@@ -19,6 +19,8 @@ class AudioManager {
   double bgmVolume = 1.0;
   double sfxVolume = 1.0;
   bool isMuted = false;
+  bool isBgmMuted = false;
+  bool isSfxMuted = false;
 
   bool _isInitialized = false;
   Future<void>? _initFuture;
@@ -126,7 +128,7 @@ class AudioManager {
     await init();
 
     if (_currentBgmPath == path) {
-      await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
+      await _bgmPlayer.setVolume(_effectiveBgmVolume);
       if (_bgmPlayer.state != PlayerState.playing) {
         await _bgmPlayer.resume();
       }
@@ -136,7 +138,7 @@ class AudioManager {
     await _bgmPlayer.stop();
     await _bgmPlayer.play(
       AssetSource(path),
-      volume: isMuted ? 0.0 : bgmVolume,
+      volume: _effectiveBgmVolume,
     );
     _currentBgmPath = path;
   }
@@ -165,7 +167,7 @@ class AudioManager {
   }
 
   void playButtonClick() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     final now = DateTime.now();
 
     if (_lastButtonClickTime != null &&
@@ -178,7 +180,7 @@ class AudioManager {
   }
 
   void playGameplayButtonClick() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     final now = DateTime.now();
 
     if (_lastGameplayButtonClickTime != null &&
@@ -193,7 +195,7 @@ class AudioManager {
 
   Future<void> playCharacterSelectionStart() async {
     await init();
-    if (isMuted) return;
+    if (_areSfxMuted) return;
 
     try {
       await _characterSelectionPlayer.stop();
@@ -212,43 +214,43 @@ class AudioManager {
   }
 
   void playTrainingSuccess() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_trainingSuccessPool, 'audio/sfx/training_success.mp3');
   }
 
   void playTrainingFailed() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_trainingFailedPool, 'audio/sfx/training_failed.mp3');
   }
 
   void playStatsGained() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_statsGainedPool, 'audio/sfx/stats_gained.mp3');
   }
 
   void playCoinsGained() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_coinsGainedPool, 'audio/sfx/coins_gained.mp3');
   }
 
   void playEventPopup() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_eventPopupPool, 'audio/sfx/event_pop_up.mp3');
   }
 
   void playStoreOpen() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_storeOpenPool, 'audio/sfx/opening_store.mp3');
   }
 
   void playTurnTransition() {
-    if (isMuted) return;
+    if (_areSfxMuted) return;
     _startPool(_turnTransitionPool, 'audio/sfx/turn_transition.mp3');
   }
 
   Future<void> setBgmVolume(double value) async {
     bgmVolume = value;
-    await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
+    await _bgmPlayer.setVolume(_effectiveBgmVolume);
   }
 
   void setSfxVolume(double value) {
@@ -257,8 +259,20 @@ class AudioManager {
 
   Future<void> setMuted(bool value) async {
     isMuted = value;
-    await _bgmPlayer.setVolume(isMuted ? 0.0 : bgmVolume);
+    await _bgmPlayer.setVolume(_effectiveBgmVolume);
   }
+
+  Future<void> setBgmMuted(bool value) async {
+    isBgmMuted = value;
+    await _bgmPlayer.setVolume(_effectiveBgmVolume);
+  }
+
+  void setSfxMuted(bool value) {
+    isSfxMuted = value;
+  }
+
+  bool get _areSfxMuted => isMuted || isSfxMuted;
+  double get _effectiveBgmVolume => (isMuted || isBgmMuted) ? 0.0 : bgmVolume;
 
   void _startPool(AudioPool? pool, String fallbackPath) {
     if (pool != null) {

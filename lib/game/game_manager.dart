@@ -480,10 +480,27 @@ class GameManager {
   // CHECK IF CURRENT SEMESTER GOALS ARE MET
   // ==================================================
   bool get hasMetCurrentGoals {
-    return intellect >= intellectGoal &&
-        fitness >= fitnessGoal &&
-        charisma >= charismaGoal &&
-        creativity >= creativityGoal;
+    return hasMetGoalForStat('intellect') &&
+        hasMetGoalForStat('fitness') &&
+        hasMetGoalForStat('charisma') &&
+        hasMetGoalForStat('creativity');
+  }
+
+  // Keep goal checks centralized so the wave-end logic and the goal panel
+  // always use the exact same requirement.
+  bool hasMetGoalForStat(String statName) {
+    switch (statName) {
+      case 'intellect':
+        return intellect >= intellectGoal;
+      case 'fitness':
+        return fitness >= fitnessGoal;
+      case 'charisma':
+        return charisma >= charismaGoal;
+      case 'creativity':
+        return creativity >= creativityGoal;
+      default:
+        return false;
+    }
   }
 
   // ==================================================
@@ -590,9 +607,9 @@ int get displayedFailureRate {
       case 1:
         return 0;
       case 2:
-        return 24;
+        return 40;
       case 3:
-        return 50;
+        return 98;
       default:
         return 0;
     }
@@ -635,13 +652,57 @@ int get displayedFailureRate {
   int _getBaseWorkCoinsReward() {
     switch (currentWave) {
       case 1:
-        return 35;
+        return 42;
       case 2:
-        return 55;
+        return 74;
       case 3:
-        return 80;
+        return 236;
       default:
+        return 42;
+    }
+  }
+
+  int _getSingleStatStoreBoost() {
+    switch (currentWave) {
+      case 1:
+        return 75;
+      case 2:
+        return 110;
+      case 3:
+        return 155;
+      default:
+        return 75;
+    }
+  }
+
+  int _getCatchUpBoostAmount() {
+    switch (currentWave) {
+      case 2:
+        return 135;
+      case 3:
+        return 190;
+      default:
+        return 90;
+    }
+  }
+
+  int _getAllStatsBoostAmount() {
+    switch (currentWave) {
+      case 2:
         return 35;
+      case 3:
+        return 55;
+      default:
+        return 25;
+    }
+  }
+
+  int _getFinalsPackAmount() {
+    switch (currentWave) {
+      case 3:
+        return 75;
+      default:
+        return 45;
     }
   }
 
@@ -830,26 +891,16 @@ int get displayedFailureRate {
   }
 
   void _updateFailureRate() {
-    if (energy >= 95) {
-      failureRate = 1;
-    } else if (energy >= 90) {
-      failureRate = 2;
-    } else if (energy >= 80) {
-      failureRate = 4;
-    } else if (energy >= 70) {
-      failureRate = 8;
-    } else if (energy >= 60) {
+    if (energy >= 55) {
+      failureRate = 0;
+    } else if (energy >= 48) {
       failureRate = 15;
-    } else if (energy >= 50) {
-      failureRate = 28;
-    } else if (energy >= 40) {
-      failureRate = 42;
-    } else if (energy >= 30) {
-      failureRate = 58;
-    } else if (energy >= 20) {
-      failureRate = 75;
-    } else if (energy >= 10) {
-      failureRate = 90;
+    } else if (energy >= 36) {
+      failureRate = 35;
+    } else if (energy >= 28) {
+      failureRate = 55;
+    } else if (energy >= 14) {
+      failureRate = 80;
     } else {
       failureRate = 99;
     }
@@ -1006,26 +1057,31 @@ int get displayedFailureRate {
   void generateStoreItems() {
     storeItems.clear();
 
+    final singleStatBoost = _getSingleStatStoreBoost();
+    final catchUpBoost = _getCatchUpBoostAmount();
+    final allStatsBoost = _getAllStatsBoostAmount();
+    final finalsPackBoost = _getFinalsPackAmount();
+
     final allItems = <StoreItem>[
       StoreItem(
-        name: 'INT +70',
+        name: 'INT +$singleStatBoost',
         cost: 90,
-        applyEffect: (gm) => gm.addStatBoost('intellect', 70),
+        applyEffect: (gm) => gm.addStatBoost('intellect', singleStatBoost),
       ),
       StoreItem(
-        name: 'FIT +70',
+        name: 'FIT +$singleStatBoost',
         cost: 90,
-        applyEffect: (gm) => gm.addStatBoost('fitness', 70),
+        applyEffect: (gm) => gm.addStatBoost('fitness', singleStatBoost),
       ),
       StoreItem(
-        name: 'CHR +70',
+        name: 'CHR +$singleStatBoost',
         cost: 90,
-        applyEffect: (gm) => gm.addStatBoost('charisma', 70),
+        applyEffect: (gm) => gm.addStatBoost('charisma', singleStatBoost),
       ),
       StoreItem(
-        name: 'CRT +70',
+        name: 'CRT +$singleStatBoost',
         cost: 90,
-        applyEffect: (gm) => gm.addStatBoost('creativity', 70),
+        applyEffect: (gm) => gm.addStatBoost('creativity', singleStatBoost),
       ),
       StoreItem(
         name: 'Energy +60',
@@ -1049,14 +1105,14 @@ int get displayedFailureRate {
     if (currentWave >= 2) {
       allItems.addAll([
         StoreItem(
-          name: 'Catch-Up Boost +90',
+          name: 'Catch-Up Boost +$catchUpBoost',
           cost: 120,
-          applyEffect: (gm) => gm.boostLowestStat(90),
+          applyEffect: (gm) => gm.boostLowestStat(catchUpBoost),
         ),
         StoreItem(
-          name: 'All Stats +25',
+          name: 'All Stats +$allStatsBoost',
           cost: 130,
-          applyEffect: (gm) => gm.boostAllStats(25),
+          applyEffect: (gm) => gm.boostAllStats(allStatsBoost),
         ),
       ]);
     }
@@ -1064,9 +1120,9 @@ int get displayedFailureRate {
     if (currentWave >= 3) {
       allItems.addAll([
         StoreItem(
-          name: 'Finals Pack +45 All',
+          name: 'Finals Pack +$finalsPackBoost All',
           cost: 180,
-          applyEffect: (gm) => gm.boostAllStats(45),
+          applyEffect: (gm) => gm.boostAllStats(finalsPackBoost),
         ),
         StoreItem(
           name: 'Perfect Focus x2',
