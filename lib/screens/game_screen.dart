@@ -251,7 +251,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   // ==========================================================
-  // SHOW FEEDBACK FOR TRAINING / WORK RESULT
+  // FEEDBACK FOR TRAINING / WORK RESULT
   // ==========================================================
   Future<void> _showExecutionFeedback({
     VoidCallback? onExitStart,
@@ -458,7 +458,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   // ==========================================================
-  // DISPLAY VALUES (for animations)
+  // DISPLAY VALUES for animations
   // ==========================================================
   int displayEnergy = 100;
   String displayBuffedStat = 'intellect';
@@ -850,7 +850,6 @@ class _GameScreenState extends State<GameScreen> {
     audioManager.playTurnTransition();
 
     setState(() {
-      // Keep input blocked for the full transition sequence, including settle delay.
       isPlayingTurnTransition = true;
     });
 
@@ -861,7 +860,6 @@ class _GameScreenState extends State<GameScreen> {
 
     setState(() {
       isTurnTransitionPanelVisible = true;
-      // The panel enters from the bottom, pauses at center, then exits upward.
       turnTransitionOffsetY = 1.2;
     });
 
@@ -886,7 +884,6 @@ class _GameScreenState extends State<GameScreen> {
     if (!mounted || _isLeavingGameScreen) return;
 
     setState(() {
-      // Keep the visible turn text on the old value until the transition ends.
       displayBuffedStat = gameManager.buffedStat;
       displayTurnsLeft = gameManager.turnsLeft;
       displaySemesterText = gameManager.currentSemesterText;
@@ -910,7 +907,6 @@ class _GameScreenState extends State<GameScreen> {
     );
     Future<void>? transitionFuture;
 
-    // Rest uses its own "RESTED!" popup, so it skips the generic success text.
     if (showExecutionFeedback) {
       // 1. SUCCESS / FAILED
       await _showExecutionFeedback(
@@ -940,7 +936,7 @@ class _GameScreenState extends State<GameScreen> {
 
     if (!mounted || _isLeavingGameScreen) return;
 
-    // 2. STAT UPDATE
+    // STAT UPDATE
     setState(() {
       displayIntellect = gameManager.intellect;
       displayFitness = gameManager.fitness;
@@ -948,16 +944,14 @@ class _GameScreenState extends State<GameScreen> {
       displayCreativity = gameManager.creativity;
     });
 
-    // 3. The transition starts when the feedback exits to the right,
-    // and we wait for that same transition to finish here.
     await (transitionFuture ?? _playTurnTransition());
     if (!mounted || _isLeavingGameScreen) return;
 
-    // 4. EVENT (if any)
+    // Events (if any)
     await _showPendingEventIfNeeded();
     if (!mounted || _isLeavingGameScreen) return;
 
-    // 5. CHECK END
+    // CHECK END
     _checkGameEnd();
   }
 
@@ -999,7 +993,6 @@ class _GameScreenState extends State<GameScreen> {
         ? gameManager.getPreviewEnergyValue()
         : displayEnergy;
 
-    // Whether preview overlay should be shown
     final isShowingEnergyPreview = isEnergyPreviewAction;
     return Scaffold(
       body: SizedBox(
@@ -1157,7 +1150,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
 
             // =========================================================
-            // CHARACTER SPRITE (CONTROLLED POSITION)
+            // CHARACTER SPRITE
             // =========================================================
             Positioned(
               left: 0,
@@ -1219,7 +1212,6 @@ class _GameScreenState extends State<GameScreen> {
 
             // ==========================================
             // STATS PANEL
-            // Values now come from GameManager.
             // ==========================================
             Positioned(
               left: size.width * 0.02,
@@ -1265,8 +1257,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
 
             // ==========================================
-            // 4 TRAINING BUTTONS
-            // These now trigger the training methods.
+            // TRAINING BUTTONS
             // ==========================================
             Positioned(
               left: size.width * 0.03,
@@ -1460,7 +1451,6 @@ class _GameScreenState extends State<GameScreen> {
 
             // =========================================================
             // ACTION FEEDBACK TEXT
-            // Shows SUCCESS! or FAILED! in the center of the screen.
             // =========================================================
             if (isShowingActionFeedback)
               Positioned.fill(
@@ -2010,7 +2000,6 @@ class _GameScreenState extends State<GameScreen> {
 
             // =========================================================
             // TURN TRANSITION PANEL
-            // Covers the screen briefly, then slides away for the next turn.
             // =========================================================
             if (isPlayingTurnTransition)
               Positioned.fill(
@@ -2036,11 +2025,6 @@ class _GameScreenState extends State<GameScreen> {
 
   // ==============================================
   // Reusable stat cell widget
-  // ==============================================
-    // ===============================================================
-  // REUSABLE STAT CELL
-  // This now supports optional preview text, like +10 or +15,
-  // shown above the stat title when a training facility is previewed.
   // ===============================================================
   Widget _statCell(
   Size size, {
@@ -2220,8 +2204,6 @@ class _GameScreenState extends State<GameScreen> {
 
   // ===============================================================
   // PREVIEW LABEL
-  // This draws the floating preview value like +10 / +15.
-  // One label lines up with one stat cell.
   // ===============================================================
   Widget _previewStatLabel(
     Size size,
@@ -2249,12 +2231,6 @@ class _GameScreenState extends State<GameScreen> {
 
   // ===============================================================
   // ENERGY BAR WIDGET
-  // - green = real current energy
-  // - orange = preview loss
-  // - cyan = preview gain
-  // - red/blue line = preview target
-  //
-  // This version is intentionally simpler.
   // ===============================================================
   Widget _buildEnergyBar({
     required Size size,
@@ -2290,7 +2266,6 @@ class _GameScreenState extends State<GameScreen> {
             child: Stack(
               children: [
                 // =====================================================
-                // REAL ENERGY BAR
                 // This animates both energy loss and energy gain.
                 // =====================================================
                 AnimatedContainer(

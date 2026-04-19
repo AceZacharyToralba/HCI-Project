@@ -10,21 +10,11 @@ class GameManager {
 
   // ==========================================================
   // GET CURRENT CHARACTER POSE IMAGE
-  // Builds the sprite path using:
-  // - selected character name
-  // - selected action
-  //
-  // Example output:
-  // assets/characters/nerd_guy_work_pose.png
   // ==========================================================
   String getCurrentCharacterPose() {
-    // Convert character name into file-friendly format
     final characterFileName = selectedCharacter.name
         .toLowerCase()
         .replaceAll(' ', '_');
-
-    // Decide which action pose to use
-    // Default to intellect if nothing is selected yet
     final action = selectedAction ?? 'intellect';
 
     return 'assets/characters/${characterFileName}_${action}_pose.png';
@@ -56,7 +46,6 @@ class GameManager {
   // ==================================================
   int currentWave = 1;
 
-  // This will control how many turns each wave has.
   int get maxTurnsForCurrentWave {
     switch (currentWave) {
       case 1:
@@ -90,7 +79,6 @@ class GameManager {
 
   // ==================================================
   // FINAL SCORE
-  // Rebalanced around the higher late-game stat totals.
   // ==================================================
   int get finalScore {
     return intellect +
@@ -304,10 +292,6 @@ class GameManager {
   // - Tap different action = switch preview
   // ==================================================
 
-  // ==================================================
-  // HELPER: check if the selected action is a training
-  // action that should show stat / energy preview.
-  // ==================================================
   bool get isTrainingPreview {
     return selectedAction == 'intellect' ||
         selectedAction == 'fitness' ||
@@ -315,10 +299,6 @@ class GameManager {
         selectedAction == 'creativity';
   }
 
-  // ==================================================
-  // PREVIEW: get stat gain for the currently selected
-  // training action.
-  // ==================================================
   int getPreviewStatGain() {
     switch (selectedAction) {
       case 'intellect':
@@ -347,7 +327,6 @@ class GameManager {
 
   // ==================================================
   // PREVIEW: get energy cost of selected action.
-  // For now, only training previews will be used in UI.
   // ==================================================
   int getPreviewEnergyCost() {
     switch (selectedAction) {
@@ -370,8 +349,6 @@ class GameManager {
 
   // ==================================================
   // PREVIEW: get the energy value after the selected
-  // action is executed.
-  // This does NOT change the real energy.
   // ==================================================
   int getPreviewEnergyValue() {
     int previewEnergy = energy;
@@ -486,8 +463,6 @@ class GameManager {
         hasMetGoalForStat('creativity');
   }
 
-  // Keep goal checks centralized so the wave-end logic and the goal panel
-  // always use the exact same requirement.
   bool hasMetGoalForStat(String statName) {
     switch (statName) {
       case 'intellect':
@@ -506,11 +481,6 @@ class GameManager {
   // ==================================================
   // PREVIEW: returns stat preview text only for the
   // correct stat panel entry.
-  //
-  // Example:
-  // if selectedAction == 'intellect', then:
-  // getPreviewTextForStat('intellect') => +15
-  // getPreviewTextForStat('fitness') => ''
   // ==================================================
   String getPreviewTextForStat(String statName) {
     if (selectedAction == statName && isTrainingPreview) {
@@ -522,16 +492,11 @@ class GameManager {
   void tapAction(String actionName) {
   if (!canPlay) return;
 
-  // Same action tapped again -> execute it
   if (selectedAction == actionName) {
     _executeAction(actionName);
 
-    // IMPORTANT:
-    // Keep the same action selected after execution
-    // so the player does not need to preview again.
     selectedAction = actionName;
   } else {
-    // Different action tapped -> only preview it
     selectedAction = actionName;
   }
 }
@@ -717,7 +682,6 @@ int get displayedFailureRate {
       return baseReward;
     }
 
-    // Repeated work gets worse quickly so coins stop being the always-safe option.
     final penaltyMultiplier = pow(0.7, projectedWorkCount - 3).toDouble();
     return max(1, (baseReward * penaltyMultiplier).round());
   }
@@ -953,21 +917,21 @@ int get displayedFailureRate {
   // HANDLE WAVE END
   // ==================================================
   void _handleWaveEnd() {
-    // If the player failed the goals, they lose immediately.
+    // If goals failed, they lose immediately.
     if (!hasMetCurrentGoals) {
       gameLost = true;
       turnsLeft = 0;
       return;
     }
 
-    // If this was the final wave and goals were met, player wins.
+    // If this was the final wave and goals were met, wins.
     if (currentWave == 3) {
       gameWon = true;
       turnsLeft = 0;
       return;
     }
 
-    // Otherwise, go to the next wave.
+    // otherwise, go to the next wave.
     currentWave++;
     turnsLeft = maxTurnsForCurrentWave;
 
